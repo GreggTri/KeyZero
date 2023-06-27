@@ -4,13 +4,11 @@ import { authenticator } from "~/utils/auth.server";
 export default function AddDocs() {
 
     return (
-        <div className='h-screen p-3 bg-background'>
-            <h1>Ask a question against your companies documentation</h1>
-            <div >
-                <form action="" method="post">
-                    <input type="text" />
-                </form>
-            </div>
+        <div className='flex flex-col items-center h-screen p-3 bg-background'>
+            <h1 className="flex my-16 text-2xl font-medium">Insert a folder with your companies documents inside</h1>
+            <button className="my-4">
+                <img src="assets/squarePlusAdd.svg" alt="AddFolder" />
+            </button>
         </div>
     );
 }
