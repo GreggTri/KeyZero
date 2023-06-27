@@ -34,7 +34,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="max-w-screen max-h-screen">
+      <body className="max-h-screen max-w-screen">
       {isLoginOrSignup ? 
         null
         :
