@@ -1,14 +1,22 @@
 import type { LoaderFunction, LoaderArgs, ActionFunction, ActionArgs } from "@remix-run/node";
 import { authenticator } from "~/utils/auth.server";
 import { useActionData } from "@remix-run/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Search() {
+
+    const [navbarHeight, setNavbarHeight] = useState(0);
+    
+    useEffect(() => {
+        const navbar = document.querySelector('header');
+        const height = navbar!.offsetHeight;
+        setNavbarHeight(height);
+    }, []);
 
     const response = useActionData<typeof action>();
 
     return (
-        <div className='flex flex-col items-center h-screen p-3 bg-background'>
+        <div className='flex flex-col items-center h-screen p-3 bg-background' style={{ height: `calc(100vh - ${navbarHeight}px)`}}>
             <h1 className="text-2xl my-14">Ask a question against your companies documentation</h1>
             {/* <div className="flex flex-row w-full px-1 bg-white rounded-md shadow-md">
                 <form method="post" action="" className="flex flex-row items-center w-full">

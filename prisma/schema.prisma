@@ -27,6 +27,7 @@ model Organization {
   businessName          String                @unique
   EIN                   String?               @unique
   stripeId              String?
+  //add something for subscribed: bool and subscriptionPlan: enum... maybe this is needed? idk?
   accountRepresentative AccountRepresentative
   documentSpaces        DocumentSpace[]
   createdAt             DateTime              @default(now())
