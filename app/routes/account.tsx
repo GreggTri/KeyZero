@@ -13,81 +13,110 @@ export default function AddDocs() {
         setNavbarHeight(height);
     }, []);
 
-    const [generalState, setGeneral] = useState(true)
+    const [settingsState, setSettings] = useState(true)
     const [orgState, setOrg] = useState(false)
-    const [settingsState, setSettings] = useState(false)
+    const [billingState, setBilling] = useState(false)
+    
 
     return (
         <div className='flex flex-row h-screen bg-background overflow-y-auto' style={{ height: `calc(100vh - ${navbarHeight}px)`}}>
             {/* Side Settings Nav */}
-            <div className=" bg-white w-36 h-full items-start" >
+            <div className=" bg-white w-36 h-full items-start cursor-pointer" >
                 <div className="flex flex-col ml-4 pt-4">
                     <span 
                     className="my-1"
                     onClick={e => {
                         setOrg(false)
-                        setSettings(false)
-                        setGeneral(true)
-                    }}
-                    >
-                        General
-                    </span>
-                    <span 
-                    className="my-1"
-                    onClick={e => {
-                        
-                        setSettings(false)
-                        setGeneral(false)
-                        setOrg(true)
-                    }}
-                    >
-                        Organization
-                    </span>
-                    <span 
-                    className="my-1"
-                    onClick={e => {
-                        
-                        
-                        setGeneral(false)
-                        setOrg(false)
+                        setBilling(false)
                         setSettings(true)
                     }}
                     >
-                        Settings
+                        {settingsState ? <span><u>Settings</u></span> : <span>Settings</span>  }
+                    </span>
+                    <span 
+                    className="my-1"
+                    onClick={e => {
+                        
+                        setSettings(false)
+                        setBilling(false)
+                        setSettings(false)
+                        setOrg(true)
+                    }}
+                    >
+                        {orgState ? <span><u>Organization</u></span> : <span>Organization</span>  }
+                    </span>
+                    <span 
+                    className="my-1"
+                    onClick={e => {
+                        
+                        setSettings(false)
+                        setSettings(false)
+                        setOrg(false)
+                        setBilling(true)
+                    }}
+                    >
+                        {billingState ? <span><u>Billing</u></span> : <span>Billing</span>  }
                     </span>
                     <NavLink to="/logout" className="my-16 text-red-600"><u>Logout</u></NavLink>
                 </div>
             </div>
 
             {/* Body */}
-            <div className="flex">
+            <div className="flex flex-col m-4 w-full bg-white rounded-md items-center">
 
-                {/* General Page */}
-                {generalState ?
-                <div>
-                    General
-                </div>
+                {/* Account Page */}
+                {settingsState ?
+                <>
+                    <span className="text-lg md:text-2xl font-bold ">
+                        Account Settings
+                    </span>
+                    
+                    <div className="flex flex-col item-center">
+                        <button className=" items-center px-3 py-1 bg-red-600 text-white rounded-md my-2">Delete Account</button>
+                    </div>
+                </>
+                    
+                    
                 :
                 null   
                 }
                 
                 {/* Organization Page */}
                 {orgState ?
-                <div>
-                    Organization
-                </div>
+                <>
+                    <span className="text-md font-bold">
+                        Organization Settings
+                    </span>
+
+                    {
+                        <form method="post" action="" className="flex flex-col mt-2 my-2 ">
+                            <label htmlFor="orgInput">
+                                Organization Name
+                            </label>
+                            <input type="text" name="orgInput" className="flex rounded-md border-black border border-solid"/>
+                            <span className="my-4">
+                                By creating an organization your account will be made the representative of the org.
+                            </span>
+
+                            <button className=" px-3 py-1 bg-primary text-white rounded-md my-2">Create Organization</button>
+                            
+                        </form>
+                    }
+                </>
                 :
                 null
                 }
-
-                {/* Settings Page */}
-                {settingsState ?
-                <div>
-                    Settings
-                </div>
+                
+                {/* Billing */}
+                {billingState ?
+                <>
+                    <span className="text-md font-bold">
+                        Billing
+                    </span>
+                </>
                 :
-                null  
-                }           
+                null
+                }      
             </div>
         </div>
     );
