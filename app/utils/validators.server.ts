@@ -57,7 +57,6 @@ export const validateEmail = (email: string): string | undefined => {
     }
 
     const isWork: boolean = isWorkEmail(email);
-    //TODO:: okay cool, now make sure it's a work email and not just a gmail or yahoo account
 
     if(!isWork){
       return "Please provide your company email"

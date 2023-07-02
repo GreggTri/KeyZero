@@ -71,7 +71,8 @@ export default function AddDocs() {
                         Account Settings
                     </span>
                     
-                    <div className="flex flex-col item-center">
+                    <div className="flex flex-col item-center my-8">
+                        <span></span>
                         <button className=" items-center px-3 py-1 bg-red-600 text-white rounded-md my-2">Delete Account</button>
                     </div>
                 </>

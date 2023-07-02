@@ -2,12 +2,103 @@ import type { LoaderFunction, LoaderArgs, ActionFunction, ActionArgs } from "@re
 import { register, authenticator } from "~/utils/auth.server";
 import { validateEmail, validatePassword } from '~/utils/validators.server'
 import { json } from "@remix-run/node";
+import { useState } from "react";
+import { useActionData } from "react-router";
 
 export default function Signup() {
 
+    const [accountStep, showAccountStep] = useState(false)
+    const [createOrgStep, showCreateOrgStep] = useState(true)
+    const [joinOrgStep, showJoinOrgStep] = useState(false)
+    const [createSubscriptionStep, showCreateSubscriptionStep] = useState(false)
+
+
+    const handleCreateAccount() {
+        showAccountStep(false)
+
+        if(){
+            showCreateOrgStep(true)
+        } else {
+            showJoinOrgStep(true)
+        }
+    }
+
+
     return (
-        <div className='w-screen h-screen p-3 bg-red-600'>
-            <h1>SignUp</h1>
+        <div className='w-screen h-screen p-3 bg-background'>
+            
+            <img src="assets/KeyZeroDarkLogo.svg" alt="Logo" className="h-auto w-96"/>
+            
+            {/* Create Account */}
+            {accountStep ?
+            <form method="post" >
+                <div className="flex flex-col w-1/4">
+                    <label htmlFor="">Company Email</label>
+                    <input type="text" className="rounded-sm shadow-sm bg-white"/>
+                    <label htmlFor="">Password</label>
+                    <input type="text" className="rounded-sm shadow-sm bg-white"/>
+
+                    <button 
+                    className="bg-primary rounded-md shadow-md my-4 py-1 px-2" 
+                    onClick={e => handleCreateAccount()}
+                    >
+                        Next
+                    </button>
+                </div>
+            </form>
+            :
+            null
+            }
+
+            {/* Create Organization: if there is not an orginization already set up */}
+            {createOrgStep ?
+            <form method="post">
+                <div className="flex flex-col">
+                    <label htmlFor="">Organization's Name</label>
+                    <input type="text" className="rounded-sm shadow-sm"/>
+
+                    <label htmlFor="">Organization's Phone Number</label>
+                    <input type="text" className="rounded-sm shadow-sm"/>
+
+                    <label htmlFor="">Organization's Email</label>
+                    <input type="text" />
+
+                </div>
+
+                <button className="bg-primary rounded-md shadow-md my-4 py-1 px-2">Next</button>
+            </form>
+            :
+            null
+            }
+
+            {/* Show Subscriptions: This step is shown after "Create Organization" */}
+            {joinOrgStep ?
+            <div className="flex ">
+                <div>
+                    <span>We found your organization from your email.</span>
+                    <span></span>
+                </div>
+                <form method="post">
+                    <button >Join Organization</button>
+                </form>
+            </div>
+            
+            :
+            null
+            }
+            {/* Show/Join Organization: This step if an organization is already created with their company*/}
+            {/* THis will most likely be a redirect to stripe hosted subscription thing.  */}
+            {createSubscriptionStep ?
+            <form method="post">
+                <div className="flex flex-col">
+
+                </div>
+
+                <button>Start Subscription</button>
+            </form>
+            :
+            null
+            }
         </div>
     );
 }
@@ -43,8 +134,7 @@ export const action: ActionFunction = async ({request}: ActionArgs) => {
 }
 
 export const loader: LoaderFunction = async ({request}: LoaderArgs) => {
-    console.log(request);
     return await authenticator.isAuthenticated(request, {
-        failureRedirect: '/signup'
+        successRedirect: '/'
     })
 }
