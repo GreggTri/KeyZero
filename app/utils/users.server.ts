@@ -22,13 +22,6 @@ export const getUser = async (userId: string) => {
             id: true,
             email: true,
             password: false, //not selected
-            firstName: true,
-            lastName: true,
-            netIncome: true,
-            setCalories: false, //not selected
-            budgetCategories: true,
-            
-
         }
     })
 

@@ -2,10 +2,12 @@ import { json }  from "@remix-run/node"
 import { prisma } from "./prisma.server"
 import type { RegisterForm} from "./types.server"
 import { createUser } from "./users.server"
+import { getOrg } from "./organizations.server"
 import bcrypt from "bcryptjs"
 import { Authenticator, AuthorizationError } from "remix-auth"
 import { sessionStorage } from "./session.server"
 import { FormStrategy } from "remix-auth-form"
+import { validateEmail, validatePassword } from '~/utils/validators.server'
 
 const authenticator = new Authenticator<any>(sessionStorage)
 
@@ -50,8 +52,8 @@ authenticator.use(formStrategy, "form")
 export { authenticator }
 
 export const register = async (form: RegisterForm) => {
-    const email = form.email
-    const password = form.password
+    const email: String = form.email
+    const password: String = form.password
 
     try{
 
@@ -62,21 +64,55 @@ export const register = async (form: RegisterForm) => {
         //         {status: 400}
         //     )
         // }
+        
+        // validate the fields
+        if (typeof email !== 'string' || typeof password !== 'string') {
+            return json({ error: `Invalid Form Data`}, { status: 400 })
+        }
+        
+        const errors = {
+            email: validateEmail(email),
+            password: validatePassword(password)
+        };
+
+        if (Object.values(errors).some(Boolean)) {
+            return json({
+                success: false, 
+                error: errors, 
+                fields: { email, password}
+            }, {status: 400})
+        }
 
         const newUser = await createUser({email, password})
 
         if(!newUser){
             return json({
+                success: false,
                 error: "Something went wrong trying to create your account",
                 fields: {email: email, password: password}
-            }, {
-                status: 500
-            })
+            }, {status: 500})
+        }
+        
+        //TODO:: make a query call that checks if a organization exists in DB with that domain.
+        //if false just return false
+        //if true return true and the name of the org.
+        const org = await getOrg(email)
+
+        if(!org){
+            return json({
+                success: true,
+                orgExists: false,
+            }, {status: 201})
         }
 
-        return json({success: true}, {status: 201});
+        return json({
+            success: true,
+            orgExists: true,
+            orgName: org.businessName,
+            orgDomain: org.businessDomain 
+        }, {status: 201});
 
     } catch(error){
-        return json({error: error}, {status: 500})
+        return json({success: false, error: error}, {status: 500})
     }
 }

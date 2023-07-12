@@ -1,28 +1,47 @@
 import type { LoaderFunction, LoaderArgs, ActionFunction, ActionArgs } from "@remix-run/node";
 import { register, authenticator } from "~/utils/auth.server";
-import { validateEmail, validatePassword } from '~/utils/validators.server'
-import { json } from "@remix-run/node";
 import { useState } from "react";
-import { useActionData } from "react-router";
+import { useActionData } from "@remix-run/react";
+import type { createAccountResponse } from "~/utils/types.server";
+import { NavLink } from '@remix-run/react'
 
 export default function Signup() {
 
-    const [accountStep, showAccountStep] = useState(false)
-    const [createOrgStep, showCreateOrgStep] = useState(true)
+    const [accountStep, showAccountStep] = useState(true)
+    const [createOrgStep, showCreateOrgStep] = useState(false)
     const [joinOrgStep, showJoinOrgStep] = useState(false)
     const [createSubscriptionStep, showCreateSubscriptionStep] = useState(false)
 
+    const [errorState, showErrorState] = useState(false)
 
-    const handleCreateAccount() {
-        showAccountStep(false)
+    const accountActionData = useActionData<createAccountResponse>();
 
-        if(){
-            showCreateOrgStep(true)
+    const handleCreateAccount = () =>{
+        
+        
+        console.log("this is accouhntActionData: ",  accountActionData);
+        if(accountActionData!.success){
+            showAccountStep(false)
+            showErrorState(false) //incase of 2nd-attempt
+            //if create account was successfull we want to figure out what the next step is and go there
+            if(accountActionData!.preexistingOrg){
+                showCreateOrgStep(true)
+            } else {
+                showJoinOrgStep(true)
+            }
+
         } else {
-            showJoinOrgStep(true)
+            showErrorState(true)
         }
+
+        
     }
 
+    const handleCreateOrg = () =>{
+
+        showCreateOrgStep(false)
+        showCreateSubscriptionStep(true)
+    }
 
     return (
         <div className='w-screen h-screen p-3 bg-background'>
@@ -31,19 +50,31 @@ export default function Signup() {
             
             {/* Create Account */}
             {accountStep ?
-            <form method="post" >
+            <form id="createAccountForm" method="post" action="/signup" >
                 <div className="flex flex-col w-1/4">
+                    <input 
+                    type="hidden"
+                    id="actionType" 
+                    name="actionType" 
+                    defaultValue="CREATE_ACCOUNT"
+                    />
                     <label htmlFor="">Company Email</label>
-                    <input type="text" className="rounded-sm shadow-sm bg-white"/>
+                    <input id="email" name="email" type="email" className="rounded-sm shadow-sm bg-white" required/>
                     <label htmlFor="">Password</label>
-                    <input type="text" className="rounded-sm shadow-sm bg-white"/>
+                    <input id="password" name="password" type="password" className="rounded-sm shadow-sm bg-white" required />
 
                     <button 
-                    className="bg-primary rounded-md shadow-md my-4 py-1 px-2" 
+                    className="bg-primary rounded-md shadow-md my-4 py-1 px-2 text-white font-semibold" 
                     onClick={e => handleCreateAccount()}
                     >
                         Next
                     </button>
+                    {errorState ?
+                    <span className="font-semibold text-red-600">{accountActionData!.error}</span>
+                    :
+                    null
+                    }
+                    <span>Have an account already? <u><NavLink to="/login">Sign In Here!</NavLink></u></span>
                 </div>
             </form>
             :
@@ -52,41 +83,59 @@ export default function Signup() {
 
             {/* Create Organization: if there is not an orginization already set up */}
             {createOrgStep ?
-            <form method="post">
+            <form method="post" action="/signup">
                 <div className="flex flex-col">
+                    <input 
+                    type="hidden"
+                    id="actionType" 
+                    name="actionType" 
+                    defaultValue="CREATE_ORG"
+                    />
                     <label htmlFor="">Organization's Name</label>
-                    <input type="text" className="rounded-sm shadow-sm"/>
+                    <input id="orgName" type="text" className="rounded-sm shadow-sm"/>
 
                     <label htmlFor="">Organization's Phone Number</label>
-                    <input type="text" className="rounded-sm shadow-sm"/>
+                    <input id="orgPhoneNumber" type="text" className="rounded-sm shadow-sm"/>
 
                     <label htmlFor="">Organization's Email</label>
-                    <input type="text" />
+                    <input id="orgEmail" type="text" />
 
                 </div>
 
-                <button className="bg-primary rounded-md shadow-md my-4 py-1 px-2">Next</button>
+                <button 
+                className="bg-primary rounded-md shadow-md my-4 py-1 px-2"
+                onClick={e => handleCreateOrg()}
+                >
+                    Next
+                </button>
             </form>
             :
             null
             }
 
-            {/* Show Subscriptions: This step is shown after "Create Organization" */}
+             {/* Show/Join Organization: This step if an organization is already created with their company*/}
             {joinOrgStep ?
             <div className="flex ">
-                <div>
+                <div> 
                     <span>We found your organization from your email.</span>
-                    <span></span>
+                    <span><b>Organization's Domain:</b> Spinsci.com</span>
                 </div>
-                <form method="post">
-                    <button >Join Organization</button>
+                <form method="post" action="/signup">
+                    <input 
+                    type="hidden"
+                    id="actionType" 
+                    name="actionType" 
+                    defaultValue="JOIN_ORG"
+                    />
+                    <button type="submit" className="bg-primary rounded-md shadow-md my-4 py-1 px-2">Join Organization</button>
                 </form>
             </div>
             
             :
             null
             }
-            {/* Show/Join Organization: This step if an organization is already created with their company*/}
+           
+            {/* Show Subscriptions: This step is shown after "Create Organization" */}
             {/* THis will most likely be a redirect to stripe hosted subscription thing.  */}
             {createSubscriptionStep ?
             <form method="post">
@@ -104,33 +153,45 @@ export default function Signup() {
 }
 
 export const action: ActionFunction = async ({request}: ActionArgs) => {
-    const form = await request.formData()
-
-    const formEmail = form.get("email") as string
-    const email = formEmail.toLowerCase()
-    const password = form.get("password") as string
-
-    // validate the fields
-    if (typeof email !== 'string' || typeof password !== 'string') {
-        return json({ error: `Invalid Form Data`}, { status: 400 })
-      }
     
-    const errors = {
-        email: validateEmail(email),
-        password: validatePassword(password)
-    };
+    //TODO:: figure out what response is and whatever success is, have it continue.     
+    //whatever means it is not, then redirect
+    
+    //after JOIN_ORG case, it should authenticate the user and send them to index
+    //after CREATE_SUBSCRIPTION case, it should send to index
 
-    if (Object.values(errors).some(Boolean)) {
-        return json({ errors, fields: { email, password}}, { status: 400 })
+    // const response = await authenticator.authenticate("form", request, {
+    //     successRedirect: "/",
+    //     failureRedirect: "/signup",
+    // })
+
+    
+    
+    const formData = await request.formData();
+    console.log(formData);
+
+    const formAction = formData.get('actionType') as string
+
+    console.log(formAction);
+
+    switch(formAction){
+        case 'CREATE_ACCOUNT':
+            const formEmail = formData.get("email") as string
+            const email = formEmail.toLowerCase()
+
+            console.log(email);
+            const password = formData.get("password") as string
+
+            return await register({email, password})
+        case 'CREATE_ORG':
+            return "blah"
+        case 'JOIN_ORG':
+            return "blah"
+        case 'CREATE_SUBSCRIPTION':
+            return "blah"
+        default: 
+            return new Error("No action was specified");
     }
-
-    
-    await register({email, password})
-
-    return await authenticator.authenticate("form", request, {
-        successRedirect: "/",
-        failureRedirect: "/signup",
-    })
 }
 
 export const loader: LoaderFunction = async ({request}: LoaderArgs) => {

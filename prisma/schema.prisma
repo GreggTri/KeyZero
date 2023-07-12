@@ -24,7 +24,8 @@ model User {
 
 model Organization {
   id                    String                @id @default(auto()) @map("_id") @db.ObjectId
-  businessName          String                @unique
+  businessName          String
+  businessDomain        String                @unique
   EIN                   String?               @unique
   stripeId              String?
   //add something for subscribed: bool and subscriptionPlan: enum... maybe this is needed? idk?
@@ -35,10 +36,7 @@ model Organization {
 }
 
 type AccountRepresentative {
-  firstName   String
-  lastName    String
-  email       String
-  phoneNumber String
+  userId String @db.ObjectId
 }
 
 type DocumentSpace {
