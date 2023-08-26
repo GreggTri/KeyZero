@@ -3,6 +3,14 @@ export interface RegisterForm {
     password: string
 }
 
+export interface AuthUserAndOrg {
+    email: string
+    password: string
+    organizationDomain: string
+}
+
+
+
 export interface createAccountResponse {
     success: Boolean,
     preexistingOrg?: Boolean
@@ -10,5 +18,4 @@ export interface createAccountResponse {
     error: String
     fields?: any
     status: number
-    
 }

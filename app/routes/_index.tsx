@@ -6,5 +6,4 @@ export const loader: LoaderFunction = async ({request}: LoaderArgs) => {
     successRedirect: '/search',
     failureRedirect: '/login'
   })
-
 }

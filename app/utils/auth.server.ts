@@ -1,8 +1,8 @@
 import { json }  from "@remix-run/node"
 import { prisma } from "./prisma.server"
 import type { RegisterForm} from "./types.server"
-import { createUser } from "./users.server"
-import { getOrg } from "./organizations.server"
+import { createUser } from "../server/users.server"
+import { getOrg } from "../server/organizations.server"
 import bcrypt from "bcryptjs"
 import { Authenticator, AuthorizationError } from "remix-auth"
 import { sessionStorage } from "./session.server"
@@ -83,7 +83,9 @@ export const register = async (form: RegisterForm) => {
             }, {status: 400})
         }
 
-        const newUser = await createUser({email, password})
+        const organizationDomain = email.split('@')[1];
+
+        const newUser = await createUser({email, password, organizationDomain})
 
         if(!newUser){
             return json({

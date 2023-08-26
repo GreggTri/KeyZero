@@ -2,7 +2,7 @@ import type { LoaderFunction, LoaderArgs, ActionFunction, ActionArgs } from "@re
 import { authenticator } from "~/utils/auth.server";
 import { useActionData } from "@remix-run/react";
 import { useState, useEffect } from "react";
-import { search } from "~/utils/search.server";
+import { search } from "~/server/search.server";
 
 export default function Search() {
 
@@ -14,6 +14,7 @@ export default function Search() {
         setNavbarHeight(height);
     }, []);
 
+    //this should be destructered
     const response = useActionData<typeof action>();
 
     return (
@@ -41,18 +42,20 @@ export default function Search() {
                 </div>
             </form>
 
+            
             {
             response ?
             <div className="flex flex-col w-full bg-white rounded-md shadow-md md:w-4/6 my-14">
                 <div className="flex flex-row justify-between">
                     <h2 className="p-4 font-medium text-md">Answer</h2>
-                    <div className="p-4 text-sm">
+                    {/* I think we wait till after launch to add feedback. just get everything done first */}
+                    {/* <div className="p-4 text-sm">
                         <span className="px-2 py-1 mx-2 text-green-600 bg-green-200 rounded">Good</span>
                         <span className="px-2 py-1 mx-2 text-red-600 bg-red-200 rounded">Bad</span>
-                    </div>
+                    </div> */}
                 </div>
                 <p className="px-6 py-4 text-sm">
-                
+                    {response.answer}
                 </p>
             </div>
             :
@@ -63,24 +66,30 @@ export default function Search() {
     );
 }
 
+//TODO: CHECK IF THIS WORKS NOW WITH SESSION STUFF
 export const action: ActionFunction = async ({request}: ActionArgs) => {
+    const session = await sessionStorage.getSession(request.headers.get('Cookie'));
+    console.log(session);
+    const userData = session.get('_session');
+    console.log(userData);
+    const userId = userData.get('id');
+    console.log(userId);
+
     const formData = await request.formData();
-    console.log(formData);
-
     const formAction = formData.get('actionType') as string
-
-    console.log(formAction);
 
     switch(formAction){
         case 'SEARCH':
-            const query = formData.get("query") as String
-            const response = await search(query)
-
+            const query = formData.get("query") as string
+            console.log("this is query",query);
+            const response = await search(userId, query)
+            console.log(response);
+            //this should be destructered
             return response
         default: 
             return new Error("No action was specified");
     }
-}
+} 
 
 export const loader: LoaderFunction = async ({request}: LoaderArgs) => {
     return await authenticator.isAuthenticated(request, {

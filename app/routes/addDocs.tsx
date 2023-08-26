@@ -26,3 +26,9 @@ export default function AddDocs() {
 export const action: ActionFunction = async ({request}: ActionArgs) => {
     
 }
+
+export const loader: LoaderFunction = async ({request}: LoaderArgs) => {
+    return await authenticator.isAuthenticated(request, {
+        failureRedirect: '/login'
+    })
+}

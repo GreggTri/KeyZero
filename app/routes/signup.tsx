@@ -43,7 +43,16 @@ export default function Signup() {
         showCreateSubscriptionStep(true)
     }
 
+    //TODO: We want to make one big form essentially. this will take in all the data from 
+    //  every screen in the registration flow. and then create Org, then user that is in that org.
+    //We can do a quick check from when they enter their email to check if org exists or not.
+    //then if not exist then send screen to get Org details. 
+
+    //or just look at this. maybe this is what I mean. idk. but definitely need to do something like this
+    // https://sergiodxa.com/articles/add-additional-data-before-submitting-on-remix
     return (
+
+        
         <div className='w-screen h-screen p-3 bg-background'>
             
             <img src="assets/KeyZeroDarkLogo.svg" alt="Logo" className="h-auto w-96"/>
