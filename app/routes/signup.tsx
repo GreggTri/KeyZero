@@ -3,44 +3,23 @@ import { register, authenticator } from "~/utils/auth.server";
 import { useState } from "react";
 import { useActionData } from "@remix-run/react";
 import type { createAccountResponse } from "~/utils/types.server";
-import { NavLink } from '@remix-run/react'
 
-export default function Signup() {
+import { useMultistepForm } from "~/hooks/useMultistepForm";
+import { CreateAccountForm } from "~/components/createAccountForm";
+import { OrganizationStep } from "~/components/OrganizationStep";
 
-    const [accountStep, showAccountStep] = useState(true)
-    const [createOrgStep, showCreateOrgStep] = useState(false)
-    const [joinOrgStep, showJoinOrgStep] = useState(false)
-    const [createSubscriptionStep, showCreateSubscriptionStep] = useState(false)
 
-    const [errorState, showErrorState] = useState(false)
+export default function Signup() {  
 
-    const accountActionData = useActionData<createAccountResponse>();
+    const { steps, currentStepIndex, step, isFirstStep, isLastStep,  back, next } = useMultistepForm([
+        <CreateAccountForm key={0} />,
+        <OrganizationStep key={1} />
+    ])
 
-    const handleCreateAccount = () =>{
-        
-        
-        console.log("this is accouhntActionData: ",  accountActionData);
-        if(accountActionData!.success){
-            showAccountStep(false)
-            showErrorState(false) //incase of 2nd-attempt
-            //if create account was successfull we want to figure out what the next step is and go there
-            if(accountActionData!.preexistingOrg){
-                showCreateOrgStep(true)
-            } else {
-                showJoinOrgStep(true)
-            }
-
-        } else {
-            showErrorState(true)
+    const handleAccountNextStep = async (isFirstStep: Boolean) => {
+        if(isFirstStep){
+            return true
         }
-
-        
-    }
-
-    const handleCreateOrg = () =>{
-
-        showCreateOrgStep(false)
-        showCreateSubscriptionStep(true)
     }
 
     //TODO: We want to make one big form essentially. this will take in all the data from 
@@ -57,106 +36,41 @@ export default function Signup() {
             
             <img src="assets/KeyZeroDarkLogo.svg" alt="Logo" className="h-auto w-96"/>
             
-            {/* Create Account */}
-            {accountStep ?
-            <form id="createAccountForm" method="post" action="/signup" >
-                <div className="flex flex-col w-1/4">
-                    <input 
-                    type="hidden"
-                    id="actionType" 
-                    name="actionType" 
-                    defaultValue="CREATE_ACCOUNT"
-                    />
-                    <label htmlFor="">Company Email</label>
-                    <input id="email" name="email" type="email" className="rounded-sm shadow-sm bg-white" required/>
-                    <label htmlFor="">Password</label>
-                    <input id="password" name="password" type="password" className="rounded-sm shadow-sm bg-white" required />
+            <form action="" className="">
+                <div className="absolute top-2 right-2">
+                {currentStepIndex + 1}/ {steps.length}
+                </div>
+                {step}
 
-                    <button 
+                <div className="flex mt-3 gap-2 justify-end">
+                    {/* Back Button */}
+                    {!isFirstStep && 
+                    <button
+                    className="bg-primary rounded-md shadow-md my-4 py-1 px-2 text-white font-semibold"
+                    type="button" 
+                    onClick={back}>
+                        Back
+                    </button>}
+
+                    {/* Next Button : Finish Sign Up button */}
+                    {!isLastStep ?
+                    <button
                     className="bg-primary rounded-md shadow-md my-4 py-1 px-2 text-white font-semibold" 
-                    onClick={e => handleCreateAccount()}
-                    >
+                    type="button" 
+                    onClick={next}>
                         Next
                     </button>
-                    {errorState ?
-                    <span className="font-semibold text-red-600">{accountActionData!.error}</span>
                     :
-                    null
+                    <button
+                    className="bg-primary rounded-md shadow-md my-4 py-1 px-2 text-white font-semibold"
+                    type="submit"
+                    >
+                        Finish Signing Up
+                    </button>
                     }
-                    <span>Have an account already? <u><NavLink to="/login">Sign In Here!</NavLink></u></span>
                 </div>
+
             </form>
-            :
-            null
-            }
-
-            {/* Create Organization: if there is not an orginization already set up */}
-            {createOrgStep ?
-            <form method="post" action="/signup">
-                <div className="flex flex-col">
-                    <input 
-                    type="hidden"
-                    id="actionType" 
-                    name="actionType" 
-                    defaultValue="CREATE_ORG"
-                    />
-                    <label htmlFor="">Organization's Name</label>
-                    <input id="orgName" type="text" className="rounded-sm shadow-sm"/>
-
-                    <label htmlFor="">Organization's Phone Number</label>
-                    <input id="orgPhoneNumber" type="text" className="rounded-sm shadow-sm"/>
-
-                    <label htmlFor="">Organization's Email</label>
-                    <input id="orgEmail" type="text" />
-
-                </div>
-
-                <button 
-                className="bg-primary rounded-md shadow-md my-4 py-1 px-2"
-                onClick={e => handleCreateOrg()}
-                >
-                    Next
-                </button>
-            </form>
-            :
-            null
-            }
-
-             {/* Show/Join Organization: This step if an organization is already created with their company*/}
-            {joinOrgStep ?
-            <div className="flex ">
-                <div> 
-                    <span>We found your organization from your email.</span>
-                    <span><b>Organization's Domain:</b> Spinsci.com</span>
-                </div>
-                <form method="post" action="/signup">
-                    <input 
-                    type="hidden"
-                    id="actionType" 
-                    name="actionType" 
-                    defaultValue="JOIN_ORG"
-                    />
-                    <button type="submit" className="bg-primary rounded-md shadow-md my-4 py-1 px-2">Join Organization</button>
-                </form>
-            </div>
-            
-            :
-            null
-            }
-           
-            {/* Show Subscriptions: This step is shown after "Create Organization" */}
-            {/* THis will most likely be a redirect to stripe hosted subscription thing.  */}
-            {createSubscriptionStep ?
-            <form method="post">
-                <div className="flex flex-col">
-
-                </div>
-
-                <button>Start Subscription</button>
-            </form>
-            :
-            null
-            }
         </div>
     );
 }
