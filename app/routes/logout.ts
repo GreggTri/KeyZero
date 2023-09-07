@@ -1,5 +1,5 @@
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
-import { authenticator } from "~/utils/auth.server";
+import { authenticator } from "~/server/auth.server";
 
 export const action: ActionFunction = async ({ request }) => {
     return await authenticator.logout(request, { redirectTo: "/login" });

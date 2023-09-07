@@ -1,34 +1,86 @@
-import type { LoaderFunction, LoaderArgs, ActionFunction, ActionArgs } from "@remix-run/node";
-import { register, authenticator } from "~/utils/auth.server";
-import { useState } from "react";
-import { useActionData } from "@remix-run/react";
-import type { createAccountResponse } from "~/utils/types.server";
-
+import { type LoaderFunction, type LoaderArgs, type ActionFunction, type ActionArgs, json } from "@remix-run/node";
+import { useActionData } from '@remix-run/react';
+import { useNavigation } from "@remix-run/react";
+import { register, authenticator } from "~/server/auth.server";
+import { getOrg } from "~/server/organizations.server";
+import { useState, useEffect } from "react";
 import { useMultistepForm } from "~/hooks/useMultistepForm";
-import { CreateAccountForm } from "~/components/createAccountForm";
+import { CreateAccountForm } from "~/components/CreateAccountForm";
 import { OrganizationStep } from "~/components/OrganizationStep";
 
 
 export default function Signup() {  
 
-    const { steps, currentStepIndex, step, isFirstStep, isLastStep,  back, next } = useMultistepForm([
-        <CreateAccountForm key={0} />,
-        <OrganizationStep key={1} />
-    ])
+    const [OrgExist, setOrgExist] = useState(false)
+    const [OrgName, setOrgName] = useState('')
+    const [inputEmail, setInputEmail] = useState('')
+    let transition = useNavigation()
 
-    const handleAccountNextStep = async (isFirstStep: Boolean) => {
-        if(isFirstStep){
-            return true
-        }
+    const actionData = useActionData();
+
+    const getUserEmail = (userEmail: string) => {
+        setInputEmail(userEmail)
     }
 
-    //TODO: We want to make one big form essentially. this will take in all the data from 
-    //  every screen in the registration flow. and then create Org, then user that is in that org.
-    //We can do a quick check from when they enter their email to check if org exists or not.
-    //then if not exist then send screen to get Org details. 
+    const { steps, currentStepIndex, step, isFirstStep, isLastStep,  back, next } = useMultistepForm([
+        <CreateAccountForm key={0} sendDataToParent={getUserEmail}/>,
+        <OrganizationStep key={1} OrgExists={OrgExist} OrgName={OrgName}/>
+    ])
 
-    //or just look at this. maybe this is what I mean. idk. but definitely need to do something like this
-    // https://sergiodxa.com/articles/add-additional-data-before-submitting-on-remix
+    const handleNextStep = async () => {
+        if(isFirstStep){
+            
+            step.props.sendDataToParent(getUserEmail)
+            
+            const formData = new FormData();
+            formData.append('email', inputEmail);
+            formData.append('actionType', 'CheckOrgExistence');
+
+            try {
+                const response = await fetch('/signup', {
+                    method: 'POST',
+                    body: formData
+                });
+    
+                if (response.ok) {
+                    // console.log("this is response", response);
+                    // const checkOrg = await response.form();
+                    // console.log(checkOrg);
+                    // // Handle checkOrg as needed
+                    console.log(actionData);
+                } else {
+                    console.error("Fetch error:", response.statusText);
+                    // Handle error response here
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                // Handle other fetch errors here
+            }
+            
+            // if (response.orgExists){
+            //     setOrgExist(false)
+                
+            // } else {
+            //     setOrgExist(true)
+            //     setOrgName(response.businessName)
+            // }
+        }
+        console.log("action data in handler",actionData);
+        next()
+    }
+
+    useEffect(() => {
+        if (transition.state === "loading" || transition.state === "submitting") {
+            console.log(actionData);
+            if(actionData){
+                setOrgExist(true)
+                setOrgName(actionData.businessName)
+            } else {
+                setOrgExist(false)
+            }
+        }
+    }, [transition, actionData])
+
     return (
 
         
@@ -40,8 +92,10 @@ export default function Signup() {
                 <div className="absolute top-2 right-2">
                 {currentStepIndex + 1}/ {steps.length}
                 </div>
+                
+                {/* Forms */}
                 {step}
-
+                {(transition.state === "loading" || transition.state === "submitting") && <h1 className="text-red">Loading...</h1>}
                 <div className="flex mt-3 gap-2 justify-end">
                     {/* Back Button */}
                     {!isFirstStep && 
@@ -56,8 +110,8 @@ export default function Signup() {
                     {!isLastStep ?
                     <button
                     className="bg-primary rounded-md shadow-md my-4 py-1 px-2 text-white font-semibold" 
-                    type="button" 
-                    onClick={next}>
+                    type="button"
+                    onClick={e => handleNextStep()}>
                         Next
                     </button>
                     :
@@ -77,48 +131,55 @@ export default function Signup() {
 
 export const action: ActionFunction = async ({request}: ActionArgs) => {
     
-    //TODO:: figure out what response is and whatever success is, have it continue.     
-    //whatever means it is not, then redirect
-    
     //after JOIN_ORG case, it should authenticate the user and send them to index
     //after CREATE_SUBSCRIPTION case, it should send to index
-
-    // const response = await authenticator.authenticate("form", request, {
-    //     successRedirect: "/",
-    //     failureRedirect: "/signup",
-    // })
-
-    
-    
+    console.log("hi");
     const formData = await request.formData();
-    console.log(formData);
-
+    
     const formAction = formData.get('actionType') as string
 
-    console.log(formAction);
-
     switch(formAction){
-        case 'CREATE_ACCOUNT':
+        case 'CheckOrgExistence':
+            const emailToCheck = formData.get('email') as string
+            const emailOrg = emailToCheck.toLowerCase()
+
+            //const checkOrgResponse = await getOrg(emailOrg)
+
+            //console.log(checkOrgResponse);
+
+            const checkOrgResponse = {
+                id: "091247104909had",
+                businessName: "rexly",
+                businessDomain: "rexly.co"
+            }
+            return json(checkOrgResponse)
+
+        //This is for when we have all the information we need and we go ahead and create user/everything else that needs to be done
+        default:
+
             const formEmail = formData.get("email") as string
             const email = formEmail.toLowerCase()
 
             console.log(email);
             const password = formData.get("password") as string
+            const registerResponse = await register({email, password})
 
-            return await register({email, password})
-        case 'CREATE_ORG':
-            return "blah"
-        case 'JOIN_ORG':
-            return "blah"
-        case 'CREATE_SUBSCRIPTION':
-            return "blah"
-        default: 
-            return new Error("No action was specified");
+            //TODO:: figure out the rest of the signup actions that need to be done
+
+            return registerResponse
     }
 }
 
 export const loader: LoaderFunction = async ({request}: LoaderArgs) => {
-    return await authenticator.isAuthenticated(request, {
-        successRedirect: '/'
-    })
+    
+    const isInitialLoad = request.headers.get('Accept') === 'text/html'
+
+    if (isInitialLoad){
+        return await authenticator.isAuthenticated(request, {
+            successRedirect: '/'
+        })
+    } else {
+        return "not initial load"
+    }
+       
 }

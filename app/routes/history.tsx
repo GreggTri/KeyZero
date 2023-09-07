@@ -1,5 +1,5 @@
 import type { LoaderFunction, LoaderArgs, ActionFunction, ActionArgs } from "@remix-run/node";
-import { authenticator } from "~/utils/auth.server";
+import { authenticator } from "~/server/auth.server";
 import HistoryTab from "~/components/HistoryTab"
 import { useEffect, useState } from 'react';
 import { useLoaderData } from "@remix-run/react";

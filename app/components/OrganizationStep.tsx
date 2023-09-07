@@ -1,12 +1,17 @@
 import { CreateOrgForm } from "./CreateOrgForm"
-import { JoinOrgStep } from "./joinOrgStep"
+import { JoinOrgStep } from "./JoinOrgStep"
 
-//figure out how to deal with props in this sense
-export function OrganizationStep() {
+interface OrganizationStepProp {
+    OrgExists: boolean;
+    OrgName: string
+}
+
+export function OrganizationStep(prop: OrganizationStepProp) {
+
 
     return (
         <>
-            {OrgExists === true ? <JoinOrgStep /> : <CreateOrgForm />}
+            {prop.OrgExists === true ? <JoinOrgStep OrgName={prop.OrgName} /> : <CreateOrgForm />}
         </>
     )
 }

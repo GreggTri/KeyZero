@@ -1,6 +1,5 @@
 import type { LoaderFunction, LoaderArgs, ActionFunction, ActionArgs } from "@remix-run/node";
-import { authenticator } from "~/utils/auth.server";
-import type { AuthorizationError } from "remix-auth"
+import { authenticator } from "~/server/auth.server";
 import { NavLink } from '@remix-run/react'
 
 export default function Login() {

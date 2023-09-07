@@ -1,11 +1,11 @@
 import { json }  from "@remix-run/node"
-import { prisma } from "./prisma.server"
-import type { RegisterForm} from "./types.server"
-import { createUser } from "../server/users.server"
-import { getOrg } from "../server/organizations.server"
+import { prisma } from "../utils/prisma.server"
+import type { RegisterForm} from "../utils/types.server"
+import { createUser } from "./users.server"
+import { getOrg } from "./organizations.server"
 import bcrypt from "bcryptjs"
 import { Authenticator, AuthorizationError } from "remix-auth"
-import { sessionStorage } from "./session.server"
+import { sessionStorage } from "../utils/session.server"
 import { FormStrategy } from "remix-auth-form"
 import { validateEmail, validatePassword } from '~/utils/validators.server'
 
