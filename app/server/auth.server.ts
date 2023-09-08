@@ -52,9 +52,11 @@ authenticator.use(formStrategy, "form")
 export { authenticator }
 
 export const register = async (form: RegisterForm) => {
-    const email: String = form.email
-    const password: String = form.password
+    const uncasedEmail: String = form.email
 
+    const email = uncasedEmail.toLowerCase()
+    const password: String = form.password
+    
     try{
 
         // const exists = await prisma.user.count({where: {email: email}});
@@ -95,23 +97,23 @@ export const register = async (form: RegisterForm) => {
             }, {status: 500})
         }
         
-        //TODO:: make a query call that checks if a organization exists in DB with that domain.
-        //if false just return false
-        //if true return true and the name of the org.
-        const org = await getOrg(email)
 
-        if(!org){
+        if(!newUser.businessDomain){
             return json({
                 success: true,
+                userId: newUser.id,
+                userEmail: newUser.email,
                 orgExists: false,
             }, {status: 201})
         }
 
         return json({
             success: true,
+            userId: newUser.id,
+            userEmail: newUser.email,
             orgExists: true,
-            orgName: org.businessName,
-            orgDomain: org.businessDomain 
+            orgName: newUser.businessName,
+            orgDomain: newUser.businessDomain 
         }, {status: 201});
 
     } catch(error){

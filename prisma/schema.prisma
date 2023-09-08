@@ -16,27 +16,34 @@ model User {
   password     String
   firstName    String?
   lastName     String?
-  organization String   @db.ObjectId
+  organization String?  @db.ObjectId
   role         String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
 
 model Organization {
-  id                    String                @id @default(auto()) @map("_id") @db.ObjectId
-  businessName          String
-  businessDomain        String                @unique
-  EIN                   String?               @unique
-  stripeId              String?
+  id                     String                  @id @default(auto()) @map("_id") @db.ObjectId
+  businessName           String
+  businessDomain         String                  @unique
+  EIN                    String?                 @unique
+  stripeId               String?
+  joinRequests           JoinRequest[]
   //add something for subscribed: bool and subscriptionPlan: enum... maybe this is needed? idk?
-  accountRepresentative AccountRepresentative
-  documentSpaces        DocumentSpace[]
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
+  accountRepresentatives AccountRepresentative[]
+  documentSpaces         DocumentSpace[]
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+}
+
+type JoinRequest {
+  userId    String   @db.ObjectId
+  createdAt DateTime @default(now())
 }
 
 type AccountRepresentative {
-  userId String @db.ObjectId
+  userId    String @db.ObjectId
+  userEmail String
 }
 
 type DocumentSpace {

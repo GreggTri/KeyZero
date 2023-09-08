@@ -2,33 +2,36 @@ import { prisma } from '../utils/prisma.server'
 import type { AuthUserAndOrg } from '../utils/types.server'
 import bcrypt from "bcryptjs"
 
-//TODO:: add way to add organization Id here. so, Org must be created before user is created.
 export const createUser = async (user: AuthUserAndOrg) => {
-    const passwordHash = await bcrypt.hash(user.password, 10)
+    const passwordHash = await bcrypt.hash(user.password, 10) //hashing password
     
+    //WHAT: we want to check to see if org from users email already exists. 
+    //WHY: this is so we can allow user to make a join request later
     const organization = await prisma.organization.findUnique({
         where: {businessDomain: user.organizationDomain},
         select: {
-            id: true
+            id: true,
+            businessName: true,
+            businessDomain: true
         }
     })
-    
-    //TODO:: return 400 and tell user that organization does not exist
-    //if they get inside here, it means they are trying to join an org not create one because org
-    //should already be created otherwise
-    if(!organization){
-        return "who the fuck are you"
-    }
 
+    //Here we create the new user
     const newUser = await prisma.user.create({
         data: {
             email: user.email,
-            password: passwordHash,
-            organization: organization.id
+            password: passwordHash
         }
     })
 
-    return { id: newUser.id, email: newUser.email, organization: newUser.organization}
+    //WHAT: Sending back the new user and information of the org
+    //WHY: to start authflow and to allow user to make a join request to the org
+    return { 
+        id: newUser.id, 
+        email: newUser.email,
+        businessName: organization?.businessName || null,
+        businessDomain: organization?.businessDomain || null
+    }
 }
 
 export const getUser = async (userId: string) => {
@@ -74,7 +77,7 @@ export const getHistory = async (userId: string) => {
     })
 
     if (!questionHistory){
-        return "fuck"
+        return null
     }
 
     return questionHistory
