@@ -1,4 +1,6 @@
+import { json } from '@remix-run/node';
 import { prisma } from '../utils/prisma.server'
+import { JoinOrgResponse } from '~/utils/types.server';
 
 export const createOrg = async (orgName: string, orgWebsite: string, orgEIN: string, orgAccountRep: string, orgAccountRepEmail: string) => {
 
@@ -47,7 +49,7 @@ export const getOrg = async (email: string) => {
     return gottenOrg
 }
 
-export const createOrgJoinRequest = async (userId: string, orgDomain: string) => {
+export const createOrgJoinRequest = async (userId: string, orgDomain: string): Promise<JoinOrgResponse> => {
 
     try{
         const orgJoinRequested = await prisma.organization.update({
@@ -61,17 +63,24 @@ export const createOrgJoinRequest = async (userId: string, orgDomain: string) =>
             }
         })
     
-        console.log(orgJoinRequested);
-        return orgJoinRequested
+        console.log("this is orgJoinRequested",orgJoinRequested);
+
+        return {
+            success: true,
+            userId: userId,
+            orgDomain: orgDomain
+        }
 
     } catch(error){
         console.log(error);
 
-        return error
+        return {
+            success: false,
+            userId: userId,
+            orgDomain: orgDomain,
+            errorMsg: error instanceof Error ? error.message : String(error) //because typescript
+        }
     }
-    
-
-    
 }
 
 //TODO:: Finish

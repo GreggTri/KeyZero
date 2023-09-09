@@ -9,7 +9,12 @@ export interface AuthUserAndOrg {
     organizationDomain: string
 }
 
-
+export interface JoinOrgResponse {
+    success: boolean;
+    userId: string;
+    orgDomain: string;
+    errorMsg?: string;
+}
 
 export interface createAccountResponse {
     success: Boolean,

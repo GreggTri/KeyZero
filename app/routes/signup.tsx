@@ -6,7 +6,7 @@ import { NavLink } from "@remix-run/react";
 
 import { authenticator, register } from "~/server/auth.server";
 import { createOrg, createOrgJoinRequest } from "~/server/organizations.server";
-
+import type { JoinOrgResponse } from "~/utils/types.server"
 
 export default function Signup() {  
 
@@ -133,6 +133,8 @@ export default function Signup() {
     );
 }
 
+
+
 export const action: ActionFunction = async ({request}: ActionArgs) => {
     
     //after JOIN_ORG case, it should authenticate the user and send them to index
@@ -154,9 +156,17 @@ export const action: ActionFunction = async ({request}: ActionArgs) => {
             const userId = formData.get('userId') as string;
             const orgDomain = formData.get('orgDomain') as string
 
-            const joinOrgResponse = await createOrgJoinRequest(userId, orgDomain)
+            const joinOrgResponse:JoinOrgResponse = await createOrgJoinRequest(userId, orgDomain)
 
-            return joinOrgResponse
+
+            if(joinOrgResponse.success){
+                return await authenticator.authenticate("form", request, {
+                    successRedirect: "/",
+                    failureRedirect: "/login",
+                })
+            }
+
+            return
 
         case 'createOrg':
             const orgName = formData.get('orgNameForm') as string
