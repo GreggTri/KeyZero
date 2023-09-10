@@ -160,13 +160,23 @@ export const action: ActionFunction = async ({request}: ActionArgs) => {
 
 
             if(joinOrgResponse.success){
-                return await authenticator.authenticate("form", request, {
+                const authResponse = await authenticator.authenticate("form", request, {
                     successRedirect: "/",
                     failureRedirect: "/login",
                 })
+
+                console.log(authResponse)
+
+                return {
+                    success: true,
+                    auth: authResponse
+                }
             }
 
-            return
+            return {
+                success: false,
+                error: joinOrgResponse.errorMsg
+            }
 
         case 'createOrg':
             const orgName = formData.get('orgNameForm') as string
