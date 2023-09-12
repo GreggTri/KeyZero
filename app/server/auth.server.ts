@@ -22,20 +22,20 @@ const formStrategy = new FormStrategy(async ({form}) => {
 
         // validate the fields
         if (typeof email !== "string" || !email.includes("@")) {
-            throw new AuthorizationError("Your email or password is incorrect")
+            throw new AuthorizationError("Your email or password is incorrect");
         }
 
         if (typeof password !== "string" || password.length < 6) {
-            throw new AuthorizationError("Your email or password is incorrect")
+            throw new AuthorizationError("Your email or password is incorrect");
         }
 
         
         if(!user){
-            throw new AuthorizationError("Your email or password is incorrect")
+            throw new AuthorizationError("Your email or password is incorrect");
         }
 
         if(!(await bcrypt.compare(password, user.password))){
-            throw new AuthorizationError("Your email or password is incorrect")
+            throw new AuthorizationError("Your email or password is incorrect");
         }
         const authUser = {
             id: user.id,
@@ -44,18 +44,18 @@ const formStrategy = new FormStrategy(async ({form}) => {
 
         return authUser
     }catch(error){
-        throw new AuthorizationError(`${error}`)
+        throw new AuthorizationError(`${error}`);
     }
 })
 
-authenticator.use(formStrategy, "form")
+authenticator.use(formStrategy, "form");
 export { authenticator }
 
 export const register = async (form: RegisterForm) => {
-    const uncasedEmail: String = form.email
+    const uncasedEmail: String = form.email;
 
-    const email = uncasedEmail.toLowerCase()
-    const password: String = form.password
+    const email = uncasedEmail.toLowerCase();
+    const password: String = form.password;
     
     try{
 
@@ -87,7 +87,7 @@ export const register = async (form: RegisterForm) => {
 
         const organizationDomain = email.split('@')[1];
 
-        const newUser = await createUser({email, password, organizationDomain})
+        const newUser = await createUser({email, password, organizationDomain});
 
         if(!newUser){
             return json({

@@ -14,7 +14,7 @@ export const createUser = async (user: AuthUserAndOrg) => {
             businessName: true,
             businessDomain: true
         }
-    })
+    });
 
     //Here we create the new user
     const newUser = await prisma.user.create({
@@ -22,7 +22,7 @@ export const createUser = async (user: AuthUserAndOrg) => {
             email: user.email,
             password: passwordHash
         }
-    })
+    });
 
     //WHAT: Sending back the new user and information of the org
     //WHY: to start authflow and to allow user to make a join request to the org
@@ -43,7 +43,7 @@ export const getUser = async (userId: string) => {
             email: true,
             password: false, //not selected
         }
-    })
+    });
 
     return gottenUser
 }
@@ -59,7 +59,7 @@ export const getUserRoleAndOrg = async (userId: string) => {
             organization: true,
             password: false, //not selected
         }
-    })
+    });
 
     return user
 }
@@ -74,7 +74,7 @@ export const getHistory = async (userId: string) => {
             //add feedback when feature is created
             createdAt: true,
         }
-    })
+    });
 
     if (!questionHistory){
         return null

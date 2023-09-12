@@ -1,6 +1,5 @@
-import { json } from '@remix-run/node';
 import { prisma } from '../utils/prisma.server'
-import { JoinOrgResponse } from '~/utils/types.server';
+import type { JoinOrgResponse } from '~/utils/types.server';
 
 export const createOrg = async (orgName: string, orgWebsite: string, orgEIN: string, orgAccountRep: string, orgAccountRepEmail: string) => {
 
@@ -14,7 +13,7 @@ export const createOrg = async (orgName: string, orgWebsite: string, orgEIN: str
                 userEmail: orgAccountRepEmail
             }
         }
-    })
+    });
 
     console.log(newOrg);
 
@@ -24,7 +23,7 @@ export const createOrg = async (orgName: string, orgWebsite: string, orgEIN: str
             data: {
                 organization: newOrg.id
             }
-        })
+        });
 
         console.log(user.organization);
     }
@@ -35,7 +34,7 @@ export const createOrg = async (orgName: string, orgWebsite: string, orgEIN: str
 export const getOrg = async (email: string) => {
     
     //stripe email for domain
-    const emailDomain = email.split('@')[1]
+    const emailDomain = email.split('@')[1];
 
     const gottenOrg = await prisma.organization.findUnique({
         where: {businessDomain: emailDomain}, 
@@ -44,7 +43,7 @@ export const getOrg = async (email: string) => {
             businessName: true,
             businessDomain: true,
         }
-    })
+    });
     
     return gottenOrg
 }
@@ -61,7 +60,7 @@ export const createOrgJoinRequest = async (userId: string, orgDomain: string): P
                     }
                 }
             }
-        })
+        });
     
         console.log("this is orgJoinRequested",orgJoinRequested);
 
@@ -91,7 +90,7 @@ export const acceptOrgJoinRequest = async (userId: string, orgId: string) => {
             data: {
                 organization: orgId
             }
-        })
+        });
         
         //need to figure out how to find specific userId inside of JoinRequests and them remove from organization
         const delJoinRequest = await prisma.organization.update({
@@ -99,7 +98,7 @@ export const acceptOrgJoinRequest = async (userId: string, orgId: string) => {
             data: {
 
             }
-        })
+        });
 
     } catch(error){
         console.log(error);
@@ -116,7 +115,7 @@ export const getOrgDocs = async (org: string) => {
             businessDomain: true,
             documentSpaces: true
         }
-    })
+    });
 
     return Org
 }

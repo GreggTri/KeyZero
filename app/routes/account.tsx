@@ -13,9 +13,12 @@ export default function AddDocs() {
         setNavbarHeight(height);
     }, []);
 
-    const [settingsState, setSettings] = useState(true)
-    const [orgState, setOrg] = useState(false)
-    const [billingState, setBilling] = useState(false)
+
+    //these states are for showing these particular pages,
+    //we'll also want to hide these in general depending on if the user is a accountRepresentative or not.
+    const [settingsState, setSettings] = useState(true);
+    const [orgState, setOrg] = useState(false);
+    const [billingState, setBilling] = useState(false);
     
 
     return (

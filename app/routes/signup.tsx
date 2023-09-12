@@ -10,8 +10,6 @@ import type { JoinOrgResponse } from "~/utils/types.server"
 
 export default function Signup() {  
 
-    const [startSubscription, setStartSubscription] = useState(false)
-
     const actionData = useActionData()
 
     const [accountData, setAccountData] = useState({
@@ -21,18 +19,21 @@ export default function Signup() {
         orgExists: false,
         orgName: "",
         orgDomain: ""
-    })
-    const [joinOrgData, setJoinOrgData] = useState({
-        success: false,
-    })
+    });
 
-    const [orgData, setOrgData] = useState({
-        success: false
-    })
+    // const [joinOrgData, setJoinOrgData] = useState({
+    //     success: false,
+    // })
 
-    let accountFetcher = useFetcher()
-    let joinOrgFetcher = useFetcher()
-    let createOrgFetcher = useFetcher()
+    // const [orgData, setOrgData] = useState({
+    //     success: false
+    // })
+
+    // const [startSubscription, setStartSubscription] = useState(false);
+
+    let accountFetcher = useFetcher();
+    let joinOrgFetcher = useFetcher();
+    let createOrgFetcher = useFetcher();
 
     useEffect(() => {
         if(actionData?.success){
@@ -40,10 +41,10 @@ export default function Signup() {
             console.log(accountFetcher.formAction);
 
             // if(!accountData.success){
-                setAccountData({...actionData})
+                setAccountData({...actionData});
         }
 
-    }, [actionData, accountFetcher])
+    }, [actionData, accountFetcher]);
 
 
     return (
@@ -141,31 +142,31 @@ export const action: ActionFunction = async ({request}: ActionArgs) => {
     //after CREATE_SUBSCRIPTION case, it should send to index
     const formData = await request.formData();
 
-    const formAction = formData.get('_action') as string
+    const formAction = formData.get('_action') as string;
 
     switch(formAction){
         case 'createAccount':
-            const email = formData.get('email') as string
-            const password = formData.get('password') as string
+            const email = formData.get('email') as string;
+            const password = formData.get('password') as string;
             
-            const registerResponse = await register({email, password})
+            const registerResponse = await register({email, password});
             return registerResponse
 
         case 'joinOrg':
             
             const userId = formData.get('userId') as string;
-            const orgDomain = formData.get('orgDomain') as string
+            const orgDomain = formData.get('orgDomain') as string;
 
-            const joinOrgResponse:JoinOrgResponse = await createOrgJoinRequest(userId, orgDomain)
+            const joinOrgResponse = await createOrgJoinRequest(userId, orgDomain);
 
 
             if(joinOrgResponse.success){
                 const authResponse = await authenticator.authenticate("form", request, {
                     successRedirect: "/",
                     failureRedirect: "/login",
-                })
+                });
 
-                console.log(authResponse)
+                console.log(authResponse);
 
                 return {
                     success: true,
@@ -179,18 +180,18 @@ export const action: ActionFunction = async ({request}: ActionArgs) => {
             }
 
         case 'createOrg':
-            const orgName = formData.get('orgNameForm') as string
-            const orgWebsite = formData.get('orgDomainForm') as string
-            const orgEIN = formData.get('orgEINForm') as string
-            const orgAccountRep = formData.get('userIdOrgForm') as string
-            const orgAccountRepEmail = formData.get('userEmailOrgForm') as string
+            const orgName = formData.get('orgNameForm') as string;
+            const orgWebsite = formData.get('orgDomainForm') as string;
+            const orgEIN = formData.get('orgEINForm') as string;
+            const orgAccountRep = formData.get('userIdOrgForm') as string;
+            const orgAccountRepEmail = formData.get('userEmailOrgForm') as string;
 
 
             if(orgWebsite !== orgAccountRepEmail.split('@')[1]){
                 return "Your Companys domain does not match your emails domain"
             }
 
-            const createOrgResponse = await createOrg(orgName, orgWebsite, orgEIN, orgAccountRep, orgAccountRepEmail)
+            const createOrgResponse = await createOrg(orgName, orgWebsite, orgEIN, orgAccountRep, orgAccountRepEmail);
 
             return createOrgResponse
             
@@ -203,7 +204,7 @@ export const action: ActionFunction = async ({request}: ActionArgs) => {
 
 export const loader: LoaderFunction = async ({request}: LoaderArgs) => {
     
-    const isInitialLoad = request.headers.get('Accept') === 'text/html'
+    const isInitialLoad = request.headers.get('Accept') === 'text/html';
 
     if (isInitialLoad){
         return await authenticator.isAuthenticated(request, {

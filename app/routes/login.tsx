@@ -10,9 +10,9 @@ export default function Login() {
 
             <form method="post" action="">
                 <div className="flex flex-col">
-                    <label htmlFor="">Email</label>
+                    <label htmlFor="email">Email</label>
                     <input name="email" type="email" className="rounded-sm shadow-sm w-1/2 my-2" required/>
-                    <label htmlFor="">Password</label>
+                    <label htmlFor="password">Password</label>
                     <input name="password" type="password" className="rounded-sm shadow-sm w-1/2 my-2" required/>
 
                     <button className="rounded-md shadow-md py-1 bg-primary text-white font-semibold px-2 w-1/4 my-4">Sign In</button>
